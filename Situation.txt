@@ -1,0 +1,30 @@
+Things done
+
+1. column creation
+2. primary input
+3. dynamic var alloc
+4. help menu
+
+
+Things remaining
+
+
+1. primary output queries
+2. primary output table properties
+3. query functions
+4. save function
+5. load function
+6. metadata save mechanism
+7. metadata load mechanism
+8. security(password function)
+9. update, delete functions
+10. self compliment display
+
+
+
+keywords active
+
+new
+-new cols <no. of columns>
+-new row
+<enter data(as column order, no commas in between)>

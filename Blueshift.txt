@@ -1,0 +1,1231 @@
+#include "dynclass.h"
+#include "authentification.h"
+#include "creators_setters.h"
+#include "help.h"
+#include "QandDParsers.h"
+#include "updaters.h"
+#include "deleter.h"
+#include "file.h"
+#include "resource.h"
+using namespace std;
+class col
+{
+private:
+	char name[10];
+	int type;
+	int size;
+	~col();
+	//int column attributes
+	int *dt;								//temp var
+	int *dd;
+	char *sd[100];
+	char *sdt[100];							//temp var
+public:
+	//common functions
+	col();
+	void Desc();
+	void nameset(char[]);
+	void typeset(char[]);
+	void typeset(int);
+	void sizeset(int);
+	void getName(char[]);
+	int getSize();
+	int getType();
+	void showdata(int);
+	friend void close(col *);
+	//int column functions
+	void newintgenerate(int);				//for first row only
+	void intgenerate(int);
+	void intRowgenerate(int);
+	void introwinput(int);
+	void introwinput(int, int);
+	int getIntData(int);
+	//char column functions
+	void newchargenerate();					//for first row only
+	void chargenerate(int);
+	void charRowgenerate(int);
+	void charrowinput(int);
+	void charrowinput(int, char[]);
+	int strcmpr(char[]);
+	int strcmpr(int, char[]);
+	void getCharData(int, char[]);
+};
+
+col::col()
+{
+	dd = NULL;
+	dt = NULL;
+
+	for (int i = 0; i < 100; i++)
+	{
+		sd[i] = NULL;
+		sdt[i] = NULL;
+	}
+}
+
+void col::Desc()
+{
+	if (type == 1)
+	{
+		cout << name << " int " << size;
+	}
+	else
+	{
+		cout << name << " char " << size;
+	}
+}
+
+void col::nameset(char nm[])
+{
+	strcpy_s(name, nm);
+}
+
+void col::typeset(char t[])
+{
+	if (strcmp(t, "int") == 0)
+	{
+		type = 1;							//int var
+	}
+	else
+	{
+		type = 2;							//string var
+	}
+}
+
+void col::typeset(int t)
+{
+	type = t;
+}
+
+void col::sizeset(int sz)
+{
+	size = sz;
+}
+
+void col::getName(char n[])
+{
+	//n = name;
+	strcpy_s(n, 10, name);
+}
+
+int col::getSize()
+{
+	return size;
+}
+
+int col::getType()
+{
+	return type;
+}
+
+void col::newintgenerate(int n)
+{
+	dd = new int[n];
+}
+
+void col::newchargenerate()
+{
+	sd[0] = new char[size];
+}
+
+void col::chargenerate(int n)
+{
+	for (int i = 0; i < (n-1); i++)
+	{
+		sdt[i] = new char[size];
+	}
+
+	for (int i = 0; i < (n-1); i++)
+	{
+		strcpy_s(sdt[i], size, sd[i]);
+	}
+
+	for (int i = 0; i < (n-1); i++)
+	{
+		delete[] sd[i];
+	}
+	
+
+	for (int i = 0; i < n; i++)
+	{
+		sd[i] = new char[size];
+	}
+
+	for (int i = 0; i < (n - 1); i++)
+	{
+		strcpy_s(sd[i], size, sdt[i]);
+	}
+
+	for (int i = 0; i < n; i++)
+	{
+		delete[] sdt[i];
+	}
+}
+
+void col::charRowgenerate(int r)
+{
+	for (int i = 0; i < r; i++)
+	{
+		sd[i] = new char[size];
+	}
+}
+
+void col::intgenerate(int n)
+{
+	dt = new int[n - 1];
+
+	for (int i = 0; i < n; i++)
+	{
+		dt[i] = dd[i];
+	}
+
+	delete[] dd;
+
+	dd = new int[n];
+
+	for (int i = 0; i < (n - 1); i++)
+	{
+		dd[i] = dt[i];
+	}
+
+	delete[] dt;
+}
+
+void col::intRowgenerate(int r)
+{
+	dd = new int[r];
+}
+
+void col::introwinput(int n)
+{
+	cin >> dd[n];
+}
+
+void col::introwinput(int n, int d)
+{
+	dd[n] = d;
+}
+
+int col::getIntData(int r)
+{
+	return dd[r];
+}
+
+void col::charrowinput(int n)
+{
+	cin >> sd[n];
+}
+
+void col::charrowinput(int n, char s[])
+{
+	strcpy_s(sd[n], size, s);
+}
+
+int col::strcmpr(char qcol[])
+{
+	return strcmp(name, qcol);
+}
+
+int col::strcmpr(int r, char qlim[])
+{
+	return strcmp(sd[r], qlim);
+}
+
+void col::getCharData(int i, char cd[])
+{
+	strcpy_s(cd, size, sd[i]);
+}
+
+void col::showdata(int r)
+{
+	if (type == 1)
+	{
+		cout << dd[r] << " ";
+	}
+	else
+	{
+		cout << sd[r] << " ";
+	}
+}
+
+col::~col()
+{
+}
+
+void close(col *c)
+{
+	delete c;
+}
+
+
+int mainParser(col *[], int&, int&);
+void tableParser(col *[], int&, int&);
+void QandDParser(col *[], int, int);
+void updater(col *[], int, int);
+void deleter(col *[], int, int&);
+void help();
+int authenticate();
+int authenticate()
+{
+	char ch[10];
+	int i = -1;
+
+	cout << "Enter password: ";
+
+	do
+	{
+		i++;
+
+		if (ch[i] = _getch())
+		{
+			cout << '*';
+		}
+
+	} while (ch[i] != ';');
+
+	ch[i] = '\0';
+
+	if (strcmp(ch, "sam") == 0)
+	{
+		cout << "\nCorrect password\n";
+		return 0;
+	}
+	else
+	{
+		cout << "\nWrong password\n";
+		return 1;
+	}
+}
+-----------------------------------------------------------
+void colcreator(col *[], int&);
+void colCreator(col *[], int&);
+void colNameTypeSetter(col *[], int&);
+void colNameTypeSetter(col *[], int, char[], int, int);
+void newSrow(col *[], int, int);
+void newRow(col *[], int, int);
+void newRows(col *[], int, int);
+void dataEntry(col *[], int, int);
+void tempshowdata(col *[], int, int);
+int tblClose(col *[], int&);
+
+#include "Headers.h"
+
+void colcreator(col *s[], int &n)
+{
+	cin >> n;
+
+	for (int i = 0; i < n; i++)
+	{
+		s[i] = new col;
+	}
+
+}
+
+void colCreator(col *s[], int &n)										//For file
+{
+	for (int i = 0; i < n; i++)
+	{
+		s[i] = new col;
+	}
+
+	cout << "\nColumns created";
+}
+
+void colNameTypeSetter(col *s[], int& n)
+{
+	char *name;
+	char *type;
+	int size;
+
+	name = new char[10];
+	type = new char[10];
+
+	for (int i = 0; i < n; i++)
+	{
+		cout << "BS.col>";
+		cin >> name >> type >> size;
+		s[i]->nameset(name);
+		s[i]->typeset(type);
+		s[i]->sizeset(size);
+	}
+
+	delete[] name;
+	delete[] type;
+}
+
+void colNameTypeSetter(col *s[], int i, char nm[], int sz, int t)
+{
+	s[i]->nameset(nm);
+	s[i]->typeset(t);
+	s[i]->sizeset(sz);
+}
+
+void newSrow(col *s[], int n, int c)
+{
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->getType() == 1)
+		{
+			s[i]->newintgenerate(n);
+		}
+		else
+		{
+			s[i]->newchargenerate();
+		}
+	}
+}
+
+void newRow(col* s[], int n, int c)
+{
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->getType() == 1)
+		{
+			s[i]->intgenerate(n);
+		}
+		else
+		{
+			s[i]->chargenerate(n);
+		}
+	}
+}
+
+void newRows(col* s[], int n, int c)
+{
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->getType() == 1)
+		{
+			s[i]->intRowgenerate(n);
+		}
+		else
+		{
+			s[i]->charRowgenerate(n);
+		}
+	}
+}
+
+void dataEntry(col *s[], int n, int c)
+{
+	int ar = n - 1;
+
+	cout << "BS.row>";
+
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->getType() == 1)
+		{
+			s[i]->introwinput(ar);
+		}
+		else
+		{
+			s[i]->charrowinput(ar);
+		}
+	}
+
+	cout << "Data entered\n";
+
+}
+
+void tempshowdata(col *s[], int c, int r)
+{
+	cout << "\n";
+	for (int i = 0; i < r; i++)
+	{
+		for (int j = 0; j < c; j++)
+		{
+			s[j]->showdata(i);
+		}
+
+		cout << "\n";
+	}
+}
+
+int tblClose(col *s[], int& n)
+{
+	for (int i = 0; i < n; i++)
+	{
+		close(s[i]);
+	}
+
+	cout << "Good Bye!";
+
+	return 1;
+}
+-----------------------------------------------------------------
+void truncate(col *[], int, int&, char[], char[]);
+void truncate(col *[], int, int&, char[], int);
+void trunc(col *[], int, int, int);
+
+void truncate(col *s[], int c, int &r, char dcol[], char dval[])
+{
+	int rows = r - 1;
+
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(dcol) == 0)
+		{
+			for (int j = 0; j < rows; j++)
+			{
+				if (s[i]->strcmpr(j, dval) == 0)
+				{
+					trunc(s, c, j, rows);
+					r = r - 1;
+					return;
+				}
+			}
+		}
+	}
+}
+
+void truncate(col *s[], int c, int &r, char dcol[], int idval)
+{
+	int rows = r - 1;
+
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(dcol) == 0)
+		{
+			for (int j = 0; j < rows; j++)
+			{
+				if (s[i]->getIntData(j) == idval)
+				{
+					trunc(s, c, j, rows);
+					r = r - 1;
+					return;
+				}
+			}
+		}
+	}
+}
+
+void trunc(col *s[], int c, int r, int tr)
+{
+	char data[20];
+
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->getType() == 1)
+		{
+			for (int j = r; j < (tr - 1); j++)
+			{
+				s[i]->introwinput(j, s[i]->getIntData(j + 1));
+			}
+		}
+		else
+		{
+			for (int j = r; j < (tr - 1); j++)
+			{
+				s[i]->getCharData(j + 1, data);
+				s[i]->charrowinput(j, data);
+			}
+		}
+	}
+}
+--------------------------------------------------------------------
+void save(col *[], int, int);
+void load(col *[], int&, int&);
+#include <fstream>
+
+struct table
+{
+	int col;
+	int row;
+};
+
+struct coldata
+{
+	char name[10];
+	int type;
+	int size;
+};
+
+struct cdata
+{
+	int d = 0;
+	char s[20];
+};
+
+void save(col *s[], int c, int r)
+{
+	table col;
+	coldata cd;
+	cdata d;
+	int rows = r - 1;
+
+	ofstream fout_col("C:\\Users\\coldata.dat", ios::in | ios::trunc | ios::binary);
+	ofstream fout_file("C:\\Users\\metadata.dat", ios::in | ios::trunc | ios::binary);
+
+	if (!fout_col)
+	{
+		cout << "FATAL ERROR: FILE NOT OPENED FOR SAVE 1";
+		_getch();
+		return;
+	}
+
+	fout_col.clear();
+	fout_file.clear();
+
+	col.col = c;
+	col.row = rows;
+
+	fout_col.write((char*)&col, sizeof(col));
+
+	for (int i = 0; i < c; i++)
+	{
+		s[i]->getName(cd.name);
+		cd.size = s[i]->getSize();
+		cd.type = s[i]->getType();
+		fout_col.write((char*)&cd, sizeof(cd));
+	}
+
+	fout_col.close();
+
+	if (fout_file.fail())
+	{
+		cout << "FATAL ERROR: FILE NOT OPENED FOR SAVE";
+		_getch();
+		return;
+	}
+	else
+	{
+		for (int i = 0; i < c; i++)
+		{
+			if (s[i]->getType() == 1)
+			{
+
+				for (int j = 0; j < rows; j++)
+				{
+					d.d = s[i]->getIntData(j);
+					fout_file.write((char*)&d, sizeof(d));
+				}
+				
+			}
+			else
+			{
+				for (int j = 0; j < rows; j++)
+				{
+					s[i]->getCharData(j, d.s);
+					fout_file.write((char*)&d, sizeof(d));
+				}
+			}
+		}
+			
+	}
+
+	fout_file.close();
+	cout << "File Saved!";
+}
+
+void load(col *s[], int &c, int &r)
+{
+	table col;
+	coldata cd;
+	cdata d;
+
+	ifstream fin_col("C:\\Users\\coldata.dat", ios::out | ios::app | ios::binary);
+	ifstream fin_file("C:\\Users\\metadata.dat", ios::out | ios::binary);
+
+	if (!fin_col || !fin_file)
+		cout << "Error, files not opened";
+	
+	fin_col.read((char*)&col, sizeof(col));
+
+	c = col.col;
+	r = col.row;
+
+	colCreator(s, c);
+
+	for (int i = 0; i < c; i++)
+	{
+		fin_col.read((char*)&cd, sizeof(cd));
+		colNameTypeSetter(s, i, cd.name, cd.size, cd.type);
+	}
+
+	fin_col.close();
+
+	newRows(s, r, c);
+
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->getType() == 1)
+		{
+			for (int j = 0; j < r; j++)
+			{
+				fin_file.read((char*)&d, sizeof(d));
+				s[i]->introwinput(j, d.d);
+			}
+		}
+		else
+		{
+			for (int j = 0; j < r; j++)
+			{
+				fin_file.read((char*)&d, sizeof(d));
+				s[i]->charrowinput(j, d.s);
+			}
+		}
+	}
+	r++;
+	fin_file.close();
+	cout << "\nfile loaded";
+
+}
+--------------------------------------------------------------------
+void BlueShift();
+void keywords();
+void cmdsyntax();
+void credits();
+void BlueShift()
+{
+	cout << "BlueShift is a simple, single user DMBS";
+	cout << " with simplified syntax which is easy to learn";
+	cout << "\n";
+	system("pause");
+}
+
+void keywords()
+{
+	cout << "keywords of BlueShift: \n";
+	
+	cout << "new - similar to create in MySQL";
+	cout << " used to create new tables, rows, columns";
+	cout << "\nkeywords of new - new col, new row";
+	cout << "\n";
+	cout << "show - similar to select in MySQL";
+	cout << " used to show data in the table, and search queries";
+	cout << "\nkeywords of show - show table, show data, show avg, etc";
+	cout << "load - used to load table from file";
+	cout << "\n";
+	cout << "save - used to save table to file\n";
+	cout << "update - used to update data\n";
+	cout << "delete - used to delete row\n";
+	cout << "close - similar to close in MySQL";
+	cout << " closes the table, DOES NOT SAVE UNSAVED DATA\n";
+	system("pause");
+}
+
+void cmdsyntax()
+{
+	cout << "for creating columns:\n";
+	cout << "new col <number of columns>\n";
+	cout << "<col name> <col type(int/char)> <col size>";
+	cout << "\n";
+	cout << "for seeing data/doing queries:\n";
+	cout << "show table - for showing table properties\n ";
+	cout << "show data - for showing data of table\n";
+	cout << "show avg <col name> - shows average of column\n";
+	cout << "show <col name;> where <query>";
+	cout << "\n";
+	cout << "save - saving table\n";
+	cout << "load - loading table\n";
+	cout << "updating: \n";
+	cout << "update, and follow commands on prompt\n";
+	cout << "deleting: \n";
+	cout << "delete <col name><space><like/=><space><value of row to be deleted>\n";
+	system("pause");
+}
+
+void credits()
+{
+	cout << "The Credits of making BlueShift go to:\n";
+	cout << "Vedant, Vishwajeet and Chinmay";
+	cout << "\n";
+	system("pause");
+}
+--------------------------------------------------------------------
+void search(col *[], int, int, char[], char[]);
+void search(col *[], int, int, char[], int);
+void updateType(col *[], int, int);
+void update(col *[], int, int, char[], char[]);
+void update(col *[], int, int, char[], int);
+
+void search(col *s[], int c, int r, char urcol[], char urval[])
+{
+	int rows = r - 1;
+
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(urcol) == 0)
+		{
+			for (int j = 0; j < rows; j++)
+			{
+				if (s[i]->strcmpr(j, urval) == 0)
+				{
+					updateType(s, c, j);
+					return;
+				}
+			}
+		}
+	}
+}
+
+void search(col *s[], int c, int r, char urcol[], int iurval)
+{
+	int rows = r - 1;
+
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(urcol) == 0)
+		{
+			for (int j = 0; j < rows; j++)
+			{
+				if (s[i]->getIntData(j) == iurval)
+				{
+					updateType(s, c, j);
+					return;
+				}
+			}
+		}
+	}
+}
+
+void updateType(col *s[], int c, int r)
+{
+	char *ucol, *uval;
+	char type[5];
+	int iuval;
+
+	ucol = new char[20];
+	uval = new char[20];
+
+	cout << "BS.u.what>";
+	cin >> ucol >> type;
+
+	if (strcmp(type, "like") == 0)
+	{
+		cin >> uval;
+		update(s, c, r, ucol, uval);
+	}
+	else
+	{
+		cin >> iuval;
+		update(s, c, r, ucol, iuval);
+	}
+
+	delete[] ucol;
+	delete[] uval;
+}
+
+void update(col *s[], int c, int r, char ucol[], char uval[])
+{
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(ucol) == 0)
+		{
+			s[i]->charrowinput(r, uval);
+		}
+	}
+}
+
+void update(col *s[], int c, int r, char ucol[], int iuval)
+{
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(ucol) == 0)
+		{
+			s[i]->introwinput(r, iuval);
+		}
+	}
+}
+------------------------------------------------------------------
+
+void tableDesc(col *[], int);
+void charQueries(col *[], int, int, char[], char[][10], int);
+void intQueries(col *[], int, int, char[], char[], char[][10], int);
+void average(col *[], int, int);
+void intEqual(col *[], int, int, char[], int, char[][10], int);
+void intGreaterThan(col *[], int, int, char[], int, char[][10], int);
+void intLessThan(col *[], int, int, char[], int, char[][10], int);
+void show(col *[], int, int, char[][10], int);
+
+//---QUERIES---
+
+void charQueries(col *s[], int c, int r, char qcol[], char collist[][10], int colcount)
+{
+	char qlim[10];
+	cin >> qlim;
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(qcol) == 0)
+		{
+			for (int j = 0; j < r; j++)
+			{
+				if (s[i]->strcmpr(j, qlim) == 0)
+					show(s, c, j, collist, colcount);
+			}
+			break;
+		}
+	}
+
+}
+
+void intQueries(col *s[], int c, int r, char optor[], char qcol[], char collist[][10], int colcount)
+{
+	int qlim;
+
+	cin >> qlim;
+
+	if (strcmp(optor, "=") == 0)
+	{
+		intEqual(s, c, r, qcol, qlim, collist, colcount);
+	}
+	if (strcmp(optor, ">") == 0)
+	{
+		intGreaterThan(s, c, r, qcol, qlim, collist, colcount);
+	}
+	if (strcmp(optor, "<") == 0)
+	{
+		intLessThan(s, c, r, qcol, qlim, collist, colcount);
+	}
+}
+
+void average(col *s[], int c, int r)
+{
+	char qcol[10];
+	int count = 0;
+
+	cin >> qcol;
+
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(qcol) == 0)
+		{
+			for (int j = 0; j < r; j++)
+			{
+				count += s[i]->getIntData(j);
+			}
+
+			break;
+		}
+	}
+
+	cout << "Average " << qcol << " : " << count / r;
+}
+
+void intEqual(col *s[], int c, int r, char qcol[], int qlim, char collist[][10], int colcount)
+{
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(qcol) == 0)
+		{
+			for (int j = 0; j < r; j++)
+			{
+				if (s[i]->getIntData(j) == qlim)
+				{
+					show(s, c, j, collist, colcount);
+					cout << "\n";
+				}
+			}
+		}
+	}
+}
+
+void intGreaterThan(col *s[], int c, int r, char qcol[], int qlim, char collist[][10], int colcount)
+{
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(qcol) == 0)
+		{
+			for (int j = 0; j < r; j++)
+			{
+				if (s[i]->getIntData(j) > qlim)
+				{
+					show(s, c, j, collist, colcount);
+					cout << "\n";
+				}
+			}
+		}
+	}
+}
+
+void intLessThan(col *s[], int c, int r, char qcol[], int qlim, char collist[][10], int colcount)
+{
+	for (int i = 0; i < c; i++)
+	{
+		if (s[i]->strcmpr(qcol) == 0)
+		{
+			for (int j = 0; j < r; j++)
+			{
+				if (s[i]->getIntData(j) < qlim)
+				{
+					show(s, c, j, collist, colcount);
+					cout << "\n";
+				}
+			}
+		}
+	}
+}
+
+//---DISPLAY---
+void tableDesc(col *s[], int c)
+{
+	cout << "\n";
+	for (int i = 0; i < c; i++)
+	{
+		s[i]->Desc();
+		cout << "\n";
+	}
+	return;
+}
+
+void show(col *s[], int c, int r, char collist[][10], int colcount)
+{
+	for (int i = 0; i < c; i++)
+	{
+		for (int j = 0; j < colcount; j++)
+		{
+			if (s[i]->strcmpr(collist[j]) == 0)
+			{
+				s[i]->showdata(r);
+			}
+		}
+	}
+}
+-----------------------------------------------------------------------------------
+int mainParser(col *s[], int& colsize, int& rowsize)
+{
+	char keywrd[8];
+
+	cout << "\nBS.main>";
+	cin >> keywrd;
+
+	if (strcmp(keywrd, "new") == 0)
+	{
+		tableParser(s, colsize, rowsize);		//table, data creation, input chinmay
+	}
+
+	if (strcmp(keywrd, "show") == 0)
+	{
+		QandDParser(s, colsize, rowsize);
+	}
+
+	if (strcmp(keywrd, "update") == 0)
+	{
+		updater(s, colsize, rowsize);
+	}
+
+	if (strcmp(keywrd, "delete") == 0)
+	{
+		deleter(s, colsize, rowsize);
+	}
+
+	if (strcmp(keywrd, "save") == 0)
+	{
+		save(s, colsize, rowsize);
+	}
+
+	if (strcmp(keywrd, "load") == 0)
+	{
+		load(s, colsize, rowsize);
+	}
+
+	if (strcmp(keywrd, "help") == 0)
+	{
+		help();
+	}
+
+	if (strcmp(keywrd, "close") == 0)
+	{
+		return tblClose(s, colsize);
+	}
+
+	return 0;
+}
+
+void tableParser(col *s[], int &colsize, int& rowsize)
+{
+	char lction[7];
+
+	cin >> lction;
+
+	if (strcmp(lction, "col") == 0)
+	{
+		colcreator(s, colsize);				//column creator
+		colNameTypeSetter(s, colsize);		//column name, type set
+		cout << "Columns created\n";
+	}
+
+	if (strcmp(lction, "row") == 0)
+	{
+		if (rowsize == 1)
+		{
+			newSrow(s, rowsize, colsize);		//Generating first row
+		}
+		else
+		{
+			newRow(s, rowsize, colsize);		//Generating the rest of rows
+		}
+
+		dataEntry(s, rowsize, colsize);			//data inputting
+	//	tempshowdata(s, rowsize, colsize);
+		rowsize++;
+	}
+}
+
+void QandDParser(col *s[], int colsize, int rowsize)
+{
+	char optor[5];
+	char lction[10], qcol[10];
+	char collist[10][10];
+	int rows = rowsize - 1, i = 0;
+
+	cin >> lction;
+
+	if (strcmp(lction, "table") == 0)
+	{
+		tableDesc(s, colsize);
+		return;
+	}
+	if (strcmp(lction, "data") == 0)
+	{
+		tempshowdata(s, colsize, rows);
+		return;
+	}
+	if (strcmp(lction, "avg") == 0)
+	{
+		average(s, colsize, rows);
+		return;
+	}
+
+	do
+	{
+		if (strcmp(lction, ";") == 0)
+		{
+			break;
+		}
+		strcpy_s(collist[i], lction);
+		cin >> lction;
+		i++;
+	} while (i <= 10);
+
+	cin >> qcol >> optor;
+
+	if (strcmp(optor, "like") == 0)
+	{
+		charQueries(s, colsize, rows, qcol, collist, i);
+	}
+	else
+	{
+		//optor = "=, etc"
+		intQueries(s, colsize, rows, optor, qcol, collist, i);
+	}
+}
+
+void updater(col *s[], int colsize, int rowsize)
+{
+	char *urcol, *urval;
+	char type[5];
+	int iurval;
+
+	urcol = new char[20];
+	urval = new char[20];
+
+	cout << "BS.u.ref>";
+	cin >> urcol >> type;
+
+	if (strcmp(type, "like") == 0)
+	{
+		cin >> urval;
+		search(s, colsize, rowsize, urcol, urval);
+	}
+	else
+	{
+		cin >> iurval;
+		search(s, colsize, rowsize, urcol, iurval);
+	}
+
+	delete[] urcol;
+	delete[] urval;
+}
+
+void deleter(col *s[], int colsize, int &rowsize)
+{
+	char *dcol, type[5], *dval;
+	int idval;
+
+	dcol = new char[20];
+	dval = new char[20];
+
+	cout << "BS.delete>where ";
+	cin >> dcol >> type;
+
+	if (strcmp(type, "like") == 0)
+	{
+		cin >> dval;
+		truncate(s, colsize, rowsize, dcol, dval);
+	}
+	else
+	{
+		cin >> idval;
+		truncate(s, colsize, rowsize, dcol, idval);
+	}
+}
+
+void help()
+{
+	int ch;
+
+	do
+	{
+		cout << "\t\tHELP\n";
+		cout << "1. What is Blueshift?\n";
+		cout << "2. Keywords\n";
+		cout << "3. Command Syntax\n";
+		cout << "4. Exit help\n";
+		cout << "0. Credits\n";
+
+		cin >> ch;
+
+		switch (ch)
+		{
+		case 1:
+			BlueShift();
+			break;
+		case 2:
+			keywords();
+			break;
+		case 3:
+			cmdsyntax();
+			break;
+		case 4:
+			break;
+		case 0:
+			credits();
+			break;
+		default:
+			cout << "Enter proper option: ";
+			break;
+		}
+	} while (ch != 4);
+
+}
+---------------------------------------------------------------------------
+void main()
+{
+	int colsize, rowsize = 1;
+	col *s[10];
+	int cl = 0;
+
+	system("color 1b");
+
+	cout << "Blueshift v1.0 Alpha\n\n";
+
+	cl = authenticate();
+
+	if (cl == 1)
+	{
+		_getch();
+		return;
+	}
+
+	cout << "Type help for help\n\n";
+
+	do
+	{
+		cl = mainParser(s, colsize, rowsize);
+
+	} while (cl != 1);
+
+	_getch();
+	return;
+}
